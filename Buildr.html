@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>buidr · build together (new posts at bottom)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background: #e5e9f0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 400px;
+            height: 780px;
+            background-color: #ffffff;
+            border-radius: 36px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .status-bar {
+            height: 48px;
+            background: white;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1e293b;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .main-header {
+            padding: 8px 20px 12px 20px;
+            background: white;
+        }
+
+        .top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #a78bfa, #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 20px;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .filter-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 30px;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            cursor: pointer;
+            color: #334155;
+            border: 1px solid #e2e8f0;
+            transition: 0.2s;
+        }
+        .filter-icon.active {
+            background: #ede9fe;
+            color: #6d28d9;
+            border-color: #c4b5fd;
+        }
+
+        .search-box {
+            background: #f1f5f9;
+            border-radius: 30px;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #64748b;
+            border: 1px solid transparent;
+            transition: 0.2s;
+            margin-top: 4px;
+        }
+        .search-box:focus-within {
+            border-color: #a78bfa;
+            background: white;
+        }
+        .search-box span {
+            font-size: 18px;
+        }
+        .search-box input {
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            width: 100%;
+        }
+        .search-box input::placeholder {
+            color: #94a3b8;
+        }
+
+        .divider {
+            height: 8px;
+            background: #f1f5f9;
+            width: 100%;
+            border-top: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .feed {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            background: #fcfdff;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            scroll-behavior: smooth;
+            padding-bottom: 90px;
+        }
+
+        .post-card {
+            background: white;
+            border-radius: 20px;
+            padding: 16px;
+            border: 1px solid #e9eef2;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            transition: 0.15s;
+            cursor: pointer;
+            user-select: none;
+            touch-action: pan-y;
+        }
+        .post-card:active {
+            background: #faf9fe;
+            border-color: #d9c9ff;
+        }
+
+        .post-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .post-category {
+            background: #ede9fe;
+            color: #5b21b6;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 100px;
+        }
+        .post-author {
+            color: #475569;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .post-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+        .post-brief {
+            font-size: 14px;
+            color: #475569;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .floating-plus {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 64px;
+            height: 64px;
+            background: #7c3aed;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: white;
+            box-shadow: 0 10px 20px rgba(124, 58, 237, 0.4);
+            cursor: pointer;
+            transition: 0.2s;
+            border: 4px solid white;
+            z-index: 10;
+        }
+        .floating-plus:hover {
+            background: #6d28d9;
+            transform: translateX(-50%) scale(1.02);
+        }
+
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+            backdrop-filter: blur(3px);
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            z-index: 20;
+            transition: 0.2s;
+        }
+        .modal-panel {
+            background: white;
+            width: 100%;
+            max-height: 90%;
+            border-top-left-radius: 32px;
+            border-top-right-radius: 32px;
+            padding: 28px 24px;
+            overflow-y: auto;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.1);
+            animation: slideUp 0.2s ease;
+        }
+        .full-modal {
+            border-radius: 0;
+            height: 100%;
+            max-height: 100%;
+            border-radius: 0;
+            align-items: flex-start;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: #0f172a;
+        }
+        .close-btn {
+            background: #f1f5f9;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 40px;
+            font-weight: 600;
+            color: #334155;
+            margin-top: 24px;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .profile-field {
+            margin-bottom: 18px;
+        }
+        .profile-field label {
+            font-weight: 600;
+            font-size: 14px;
+            color: #334155;
+            margin-bottom: 6px;
+            display: block;
+        }
+        .profile-field input, .profile-field select, .profile-field textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 30px;
+            font-size: 16px;
+            background: #fafdff;
+        }
+        .profile-field textarea {
+            border-radius: 24px;
+            resize: vertical;
+        }
+        .avatar-upload {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .avatar-preview {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #cbd5e1;
+            overflow: hidden;
+        }
+        .avatar-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .filter-option {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #edf2f7;
+        }
+        .filter-option input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            margin-right: 16px;
+            accent-color: #7c3aed;
+        }
+
+        .detail-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .detail-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #cbd5e1;
+            overflow: hidden;
+        }
+        .detail-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .detail-name {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .detail-category {
+            background: #ede9fe;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 14px;
+            display: inline-block;
+            margin: 8px 0 12px;
+        }
+        .detail-brief {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 16px 0 8px;
+        }
+        .detail-full {
+            font-size: 16px;
+            color: #334155;
+            line-height: 1.5;
+            margin: 16px 0;
+            white-space: pre-wrap;
+        }
+        .detail-contact {
+            background: #f1f4f9;
+            padding: 16px;
+            border-radius: 24px;
+            font-weight: 500;
+            margin: 24px 0;
+        }
+
+        .create-form input, .create-form select, .create-form textarea {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 24px;
+            font-size: 15px;
+        }
+        .create-form textarea {
+            min-height: 100px;
+        }
+        .image-upload-note {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 24px;
+            text-align: center;
+            color: #64748b;
+            border: 2px dashed #cbd5e1;
+            margin-bottom: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container" id="appContainer">
+    <div class="status-bar">
+        <span>9:41</span>
+        <span>📶 🔋 100%</span>
+    </div>
+
+    <div class="main-header">
+        <div class="top-row">
+            <div class="avatar" id="avatarBtn" title="Profile">
+                <span id="avatarEmoji">👤</span>
+            </div>
+            <div class="filter-icon" id="filterBtn">⏳</div>
+        </div>
+        <div class="search-box">
+            <span>🔍</span>
+            <input type="text" placeholder="Search projects or people..." id="searchInput">
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="feed" id="feedContainer">
+    </div>
+
+    <div class="floating-plus" id="createPostBtn">+</div>
+
+    <div id="modalLayer" class="hidden"></div>
+</div>
+
+<script>
+    (function() {
+        // ==================== 持久化存储模块 ====================
+        const STORAGE_KEY = 'buidr_app_data';
+        
+        // 默认数据
+        const defaultCategories = ['Programming', 'Engineering', 'Environmental Science', 'Humanities', 'Art', 'Sports'];
+        
+        const defaultUser = {
+            name: 'Zhang Fan',
+            age: '24',
+            interests: 'AI, Painting, Hiking',
+            gender: 'Male',
+            avatar: null,
+        };
+        
+        const defaultPosts = [
+            { id: 'p1', title: 'AI Love Tree', category: 'Programming', author: 'Li Mu', brief: 'Generate healing tree art with neural networks, looking for frontend dev', full: 'We want to build an interactive webpage that generates different love trees using GAN. Need Python backend and Vue frontend.', contact: '@limu_ai', authorAvatar: null },
+            { id: 'p2', title: 'Simple Water Purifier', category: 'Engineering', author: 'EcoHacker', brief: 'Low-cost water purification, looking for mechanical partner', full: 'Design a portable water filter cup using activated carbon and UV light. Initial sketches ready, hope to find mechanical and materials friends to improve together.', contact: 'WeChat eco_2025', authorAvatar: null },
+            { id: 'p3', title: 'City Garden Project', category: 'Environmental Science', author: 'Moss', brief: 'Rooftop community garden, recruiting gardening enthusiasts', full: 'Building an ecological garden on a downtown office rooftop, already got permission from property. Need friends who know plants, composting, or have landscaping experience.', contact: 'moss.garden@example.com', authorAvatar: null },
+            { id: 'p4', title: 'Oral History Archive', category: 'Humanities', author: 'Zhou', brief: 'Collecting stories from local elders, making a podcast', full: 'We have interviewed 3 seniors already. Need volunteers who can edit audio, do layout, or are interested in history.', contact: 'zhou_story', authorAvatar: null },
+            { id: 'p5', title: 'Street Graffiti Collab', category: 'Art', author: 'Rae', brief: 'Paint a wall together this weekend, materials provided', full: 'Location at Westside Creative Park, design draft ready. Welcome anyone who can paint or just wants to try. Bring your own brushes.', contact: 'ig: rae.art', authorAvatar: null },
+            { id: 'p6', title: 'Weekend Frisbee', category: 'Sports', author: 'Mike', brief: 'Saturday morning frisbee, beginner friendly', full: 'At Chaoyang Park, already have about 15 people. No experience needed, just have fun.', contact: 'mike_ultimate', authorAvatar: null },
+        ];
+
+        // 从 localStorage 加载数据，如果没有则使用默认值
+        function loadData() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    return {
+                        currentUser: data.currentUser || defaultUser,
+                        posts: data.posts || defaultPosts,
+                        activeFilters: data.activeFilters ? new Set(data.activeFilters) : new Set(defaultCategories)
+                    };
+                } catch (e) {
+                    console.error('Failed to parse saved data', e);
+                }
+            }
+            return {
+                currentUser: defaultUser,
+                posts: defaultPosts,
+                activeFilters: new Set(defaultCategories)
+            };
+        }
+
+        // 保存数据到 localStorage
+        function saveData() {
+            const data = {
+                currentUser: currentUser,
+                posts: posts,
+                activeFilters: Array.from(activeFilters)
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            console.log('Data saved', data);
+        }
+
+        // 初始化数据
+        let { currentUser, posts, activeFilters } = loadData();
+        
+        // 确保 activeFilters 是 Set
+        if (!(activeFilters instanceof Set)) {
+            activeFilters = new Set(activeFilters || defaultCategories);
+        }
+
+        let searchKeyword = '';
+        let currentPostId = null;
+
+        // ==================== 渲染函数 ====================
+        function renderFeed() {
+            const feed = document.getElementById('feedContainer');
+            if (!feed) return;
+
+            let filtered = posts.filter(p => activeFilters.has(p.category));
+
+            if (searchKeyword.trim() !== '') {
+                const kw = searchKeyword.trim().toLowerCase();
+                filtered = filtered.filter(p => 
+                    p.title.toLowerCase().includes(kw) ||
+                    p.author.toLowerCase().includes(kw) ||
+                    p.brief.toLowerCase().includes(kw)
+                );
+            }
+
+            if (filtered.length === 0) {
+                feed.innerHTML = `<div style="text-align: center; padding: 40px 0; color: #94a3b8;">No posts match. Try adjusting filters or create one ➕</div>`;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(p => {
+                html += `
+                    <div class="post-card" data-post-id="${p.id}">
+                        <div class="post-meta">
+                            <span class="post-category">${p.category}</span>
+                            <span class="post-author">👤 ${p.author}</span>
+                        </div>
+                        <div class="post-title">${p.title}</div>
+                        <div class="post-brief">${p.brief}</div>
+                    </div>
+                `;
+            });
+            feed.innerHTML = html;
+
+            document.querySelectorAll('.post-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const pid = card.dataset.postId;
+                    if (pid) showPostDetail(pid);
+                });
+
+                let touchStartX = 0;
+                card.addEventListener('touchstart', (e) => {
+                    touchStartX = e.touches[0].clientX;
+                }, {passive: true});
+                card.addEventListener('touchend', (e) => {
+                    if (!e.changedTouches[0]) return;
+                    const deltaX = e.changedTouches[0].clientX - touchStartX;
+                    if (Math.abs(deltaX) > 60) {
+                        e.preventDefault();
+                        const id = card.dataset.postId;
+                        removePostById(id);
+                    }
+                });
+
+                let mousedown = false;
+                card.addEventListener('mousedown', (e) => { mousedown = true; touchStartX = e.clientX; });
+                card.addEventListener('mouseup', (e) => {
+                    if (!mousedown) return;
+                    mousedown = false;
+                    const deltaX = e.clientX - touchStartX;
+                    if (Math.abs(deltaX) > 60) {
+                        const id = card.dataset.postId;
+                        removePostById(id);
+                    }
+                });
+                card.addEventListener('mouseleave', () => { mousedown = false; });
+            });
+        }
+
+        function removePostById(postId) {
+            posts = posts.filter(p => p.id !== postId);
+            saveData();
+            renderFeed();
+            hideModal();
+        }
+
+        function findPost(id) {
+            return posts.find(p => p.id === id);
+        }
+
+        // ==================== 模态框管理 ====================
+        const modalLayer = document.getElementById('modalLayer');
+
+        function showModal(contentHtml, full = false) {
+            modalLayer.classList.remove('hidden');
+            modalLayer.innerHTML = `
+                <div class="modal-overlay" id="modalOverlay">
+                    <div class="modal-panel ${full ? 'full-modal' : ''}">
+                        ${contentHtml}
+                        <button class="close-btn" id="closeModalBtn">Close</button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('closeModalBtn').addEventListener('click', hideModal);
+            
+            document.getElementById('modalOverlay').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('modalOverlay')) hideModal();
+            });
+        }
+
+        function hideModal() {
+            modalLayer.classList.add('hidden');
+            modalLayer.innerHTML = '';
+        }
+
+        // ==================== 个人资料 ====================
+        function showProfile() {
+            const avatarHtml = currentUser.avatar 
+                ? `<img src="${currentUser.avatar}" alt="avatar" style="width:100%;height:100%;object-fit:cover;">` 
+                : `<span style="font-size:24px;">${currentUser.name.charAt(0)}</span>`;
+            
+            const content = `
+                <div class="modal-title">✏️ Edit Profile</div>
+                <div class="profile-field">
+                    <label>Avatar</label>
+                    <div class="avatar-upload">
+                        <div class="avatar-preview" id="avatarPreview">${avatarHtml}</div>
+                        <input type="file" id="avatarUpload" accept="image/*">
+                    </div>
+                </div>
+                <div class="profile-field">
+                    <label>Name</label>
+                    <input type="text" id="profileName" value="${currentUser.name}">
+                </div>
+                <div class="profile-field">
+                    <label>Age</label>
+                    <input type="number" id="profileAge" value="${currentUser.age}">
+                </div>
+                <div class="profile-field">
+                    <label>Gender</label>
+                    <select id="profileGender">
+                        <option ${currentUser.gender === 'Male' ? 'selected' : ''}>Male</option>
+                        <option ${currentUser.gender === 'Female' ? 'selected' : ''}>Female</option>
+                        <option ${currentUser.gender === 'Other' ? 'selected' : ''}>Other</option>
+                    </select>
+                </div>
+                <div class="profile-field">
+                    <label>Interests</label>
+                    <textarea id="profileInterests" rows="3">${currentUser.interests}</textarea>
+                </div>
+                <button class="close-btn" id="saveProfileBtn" style="background:#7c3aed; color:white;">Save Profile</button>
+            `;
+            showModal(content, false);
+
+            const upload = document.getElementById('avatarUpload');
+            const preview = document.getElementById('avatarPreview');
+            
+            if (upload) {
+                upload.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                            preview.innerHTML = `<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:cover;">`;
+                            currentUser.avatar = ev.target.result;
+                            
+                            const avatarEmoji = document.getElementById('avatarEmoji');
+                            avatarEmoji.outerHTML = `<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:cover;" id="avatarEmoji">`;
+                            
+                            saveData();
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            const saveBtn = document.getElementById('saveProfileBtn');
+            if (saveBtn) {
+                saveBtn.addEventListener('click', () => {
+                    const nameInput = document.getElementById('profileName');
+                    const ageInput = document.getElementById('profileAge');
+                    const genderSelect = document.getElementById('profileGender');
+                    const interestsTextarea = document.getElementById('profileInterests');
+                    
+                    if (nameInput) currentUser.name = nameInput.value;
+                    if (ageInput) currentUser.age = ageInput.value;
+                    if (genderSelect) currentUser.gender = genderSelect.value;
+                    if (interestsTextarea) currentUser.interests = interestsTextarea.value;
+                    
+                    if (!currentUser.avatar) {
+                        const avatarEmoji = document.getElementById('avatarEmoji');
+                        if (avatarEmoji) {
+                            avatarEmoji.outerHTML = `<span id="avatarEmoji" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">${currentUser.name.charAt(0)}</span>`;
+                        }
+                    }
+                    
+                    saveData();
+                    hideModal();
+                });
+            }
+        }
+
+        // ==================== 筛选 ====================
+        function showFilter() {
+            let checks = '';
+            defaultCategories.forEach(cat => {
+                const checked = activeFilters.has(cat) ? 'checked' : '';
+                checks += `<div class="filter-option"><input type="checkbox" value="${cat}" ${checked}> ${cat}</div>`;
+            });
+            
+            const content = `
+                <div class="modal-title">⏳ Filter Categories</div>
+                ${checks}
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button class="close-btn" id="resetFiltersBtn" style="background:#e2e8f0;">Reset</button>
+                    <button class="close-btn" id="applyFiltersBtn" style="background:#7c3aed; color:white;">Apply</button>
+                </div>
+            `;
+            showModal(content, false);
+
+            const applyBtn = document.getElementById('applyFiltersBtn');
+            if (applyBtn) {
+                applyBtn.addEventListener('click', () => {
+                    const newFilters = new Set();
+                    document.querySelectorAll('.filter-option input:checked').forEach(cb => {
+                        newFilters.add(cb.value);
+                    });
+                    activeFilters = newFilters.size ? newFilters : new Set(defaultCategories);
+                    saveData();
+                    renderFeed();
+                    hideModal();
+                });
+            }
+
+            const resetBtn = document.getElementById('resetFiltersBtn');
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-option input').forEach(cb => cb.checked = true);
+                });
+            }
+        }
+
+        // ==================== 帖子详情 ====================
+        function showPostDetail(postId) {
+            const post = findPost(postId);
+            if (!post) return;
+            currentPostId = postId;
+
+            const authorAvatarHtml = post.authorAvatar 
+                ? `<img src="${post.authorAvatar}" style="width:100%;height:100%;object-fit:cover;">` 
+                : '👤';
+                
+            const content = `
+                <div class="detail-header">
+                    <div class="detail-avatar">${authorAvatarHtml}</div>
+                    <div>
+                        <div class="detail-name">${post.author}</div>
+                        <div style="color:#64748b; font-size:14px;">Author</div>
+                    </div>
+                </div>
+                <div class="detail-category">🏷️ ${post.category}</div>
+                <div style="font-size:26px; font-weight:700;">${post.title}</div>
+                <div class="detail-brief">📌 Brief</div>
+                <div style="color:#334155;">${post.brief}</div>
+                <div class="detail-brief">📄 Details</div>
+                <div class="detail-full">${post.full}</div>
+                <div class="detail-contact">📞 Contact: ${post.contact}</div>
+            `;
+            showModal(content, true);
+        }
+
+        // ==================== 创建帖子（放在最底部）====================
+        function showCreatePost() {
+            let catOptions = '';
+            defaultCategories.forEach(c => catOptions += `<option value="${c}">${c}</option>`);
+            
+            const content = `
+                <div class="modal-title">➕ Create New Project</div>
+                <div class="create-form">
+                    <input type="text" placeholder="Project title" id="postTitle">
+                    <select id="postCategory">
+                        ${catOptions}
+                    </select>
+                    <input type="text" placeholder="Brief summary" id="postBrief">
+                    <textarea placeholder="Detailed description (you can include images etc. Text only for demo)" id="postFull"></textarea>
+                    <div class="image-upload-note" id="simulateImage">
+                        🖼️ Click to simulate image upload (demo)
+                    </div>
+                    <input type="text" placeholder="Your contact (WeChat/email etc.)" id="postContact">
+                    <button class="close-btn" id="publishPostBtn" style="background:#7c3aed; color:white;">Publish</button>
+                </div>
+            `;
+            showModal(content, false);
+
+            const simulateBtn = document.getElementById('simulateImage');
+            if (simulateBtn) {
+                simulateBtn.addEventListener('click', () => {
+                    alert('[Demo] In real app you would pick an image from gallery. Simulated image placeholder added.');
+                });
+            }
+
+            const publishBtn = document.getElementById('publishPostBtn');
+            if (publishBtn) {
+                publishBtn.addEventListener('click', () => {
+                    const titleInput = document.getElementById('postTitle');
+                    const categorySelect = document.getElementById('postCategory');
+                    const briefInput = document.getElementById('postBrief');
+                    const fullTextarea = document.getElementById('postFull');
+                    const contactInput = document.getElementById('postContact');
+                    
+                    const title = titleInput ? titleInput.value.trim() : '';
+                    const cat = categorySelect ? categorySelect.value : defaultCategories[0];
+                    const brief = briefInput ? briefInput.value.trim() : '';
+                    const full = fullTextarea ? fullTextarea.value.trim() : 'No detailed description';
+                    const contact = contactInput ? contactInput.value.trim() : 'No contact provided';
+                    
+                    if (!title || !brief) {
+                        alert('Title and brief summary cannot be empty');
+                        return;
+                    }
+                    
+                    const newPost = {
+                        id: 'post_' + Date.now() + Math.random().toString(36).substr(2, 4),
+                        title: title, 
+                        category: cat, 
+                        author: currentUser.name,
+                        brief: brief, 
+                        full: full, 
+                        contact: contact,
+                        authorAvatar: currentUser.avatar || null,
+                    };
+                    
+                    // 修改这里：将新帖子添加到数组末尾（最底部）
+                    posts.push(newPost);
+                    saveData();
+                    renderFeed();
+                    
+                    // 自动滚动到底部，显示新帖子
+                    setTimeout(() => {
+                        const feed = document.getElementById('feedContainer');
+                        if (feed) {
+                            feed.scrollTop = feed.scrollHeight;
+                        }
+                    }, 100);
+                    
+                    hideModal();
+                });
+            }
+        }
+
+        // ==================== 初始化头像显示 ====================
+        function updateAvatarDisplay() {
+            const avatarEmoji = document.getElementById('avatarEmoji');
+            if (!avatarEmoji) return;
+            
+            if (currentUser.avatar) {
+                const img = document.createElement('img');
+                img.src = currentUser.avatar;
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.objectFit = 'cover';
+                avatarEmoji.parentNode.innerHTML = `<div class="avatar" id="avatarBtn" title="Profile">${img.outerHTML}</div>`;
+            } else {
+                avatarEmoji.innerText = currentUser.name.charAt(0);
+            }
+        }
+
+        // ==================== 事件绑定 ====================
+        document.getElementById('avatarBtn').addEventListener('click', showProfile);
+        document.getElementById('filterBtn').addEventListener('click', showFilter);
+        document.getElementById('createPostBtn').addEventListener('click', showCreatePost);
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            searchKeyword = e.target.value;
+            renderFeed();
+        });
+
+        // 初始渲染
+        updateAvatarDisplay();
+        renderFeed();
+
+        // 保存数据到 localStorage 当页面关闭时
+        window.addEventListener('beforeunload', function() {
+            saveData();
+        });
+    })();
+</script>
+</body>
+</html>
