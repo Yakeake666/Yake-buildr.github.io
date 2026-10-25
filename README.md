@@ -4,3 +4,9 @@ Buildr is an app that allaws engineers to find there teammates conveniently and 
 
 ##  Features
 There are projects posted by other people in the middle of the main page. Swipe a project to the right or left to eliminate it, and then new projects will be shown. Click into those posts and see details about the projects. Information about the projects and the person who posts the project is listed here. On the top of the main page, you can search existing projects by name or categories. Click the "+" on the bottom to post your own projects.
+
+## Installation
+```bash
+git clone [https://github.com/your-username/buildr.git](https://github.com/your-username/buildr.git)
+cd buildr
+npm install
